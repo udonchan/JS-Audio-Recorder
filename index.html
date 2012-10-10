@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8"> 
+    <link href="css/style.css" type="text/css" rel="stylesheet">
+    <script src="js/jquery-1.8.2.min.js"></script>
+    <script src="js/recorder.js"></script>
+    <script src="js/recorderWorker.js"></script>
+    <script src="js/gum.js"></script>
+    <script src="js/main.js"></script>
+    <title>getUserMedia test</title>
+  </head>
+  <body>
+    <div id="wrapper_block">
+      <header>
+	<h1>JS Audio Recorder</h1>
+      </header>
+      <div id="demo_block">
+	<section id="demo_section">
+	  <div id="player_block">    
+	    <audio id="player" src="" controls></audio>
+	  </div>
+	  <div id="controller_block">
+	    <button id="rec">record</button>
+	    <button id="download">download</button>
+	  </div>
+	</section>
+      </div>
+      <div id="description_block">
+	<section id="information_section">
+	  <h3>これはなに？</h3>
+	  <p>
+	    HTMLとJavascriptだけで音声録音機能を実現するデモプログラムです．
+	    音声の録音，録音した音声の再生，音声の保存機能が利用できます．
+	  </p>
+	  <h3>動作環境</h3>
+	  <p>
+	    Google Chrome バージョン23 より新しいバージョンで，
+	    Web Audio Input を有効にした環境で動作します．
+	    Web Audio Input を有効にするには次の作業が必要です．
+	    まず，Google Chrome を起動した後にロケーションバーに
+	    <code>chrome://flags</code>を指定します．
+	    次に，Web Audio Input の項目の"有効にする"をクリックした後に，
+	    Google Chrome を再起動します．
+	  </p>
+	  <h3>つかい方</h3>
+	  <p>
+	    まず，このページを開くとマイクへのアクセスの許可を求められるので，
+	    許可のボタンをクリックします．
+	    次に record ボタンをクリックすると，録音が始まります．
+	    このとき record ボタンは stop ボタンに変化し，
+	    この stop ボタンをクリックすると録音を停止します．
+	    録音処理が成功すると，ボタン上部に表示されたプレイヤーで，
+	    録音した音声を再生することが可能です．
+	    また，download ボタンをクリックすることによって，
+	    録音した音声を再生することができます．
+	  </p>
+	</section>
+      </div>
+    </div>
+  </body>
+</html>
