@@ -1,85 +1,65 @@
 (function(window){
 
-    var WORKER_PATH = 'js/recorderWorker.js';
-
-    var config;
-    var worker;
-    var currCallback;
-    var recording = false;
-    
     var Recorder = function(source, cfg){
-	config = cfg || {};
-	var bufferLen = config.bufferLen || 4096;
-	this.context = source.context;
-	this.node = this.context.createJavaScriptNode(bufferLen, 2, 2);
+        this.recording = false;
+        this.config = cfg || {};
 
-	this.node.onaudioprocess = function(e){
-	    if (!recording) return;
-	    worker.postMessage({
-		command: 'record',
-		buffer: [
-		    e.inputBuffer.getChannelData(0),
-		    e.inputBuffer.getChannelData(1)
-		]
-	    });
-	};
+        var WORKER_PATH = 'js/recorderWorker.js';
+        var worker = this.worker = new Worker(this.config.workerPath || WORKER_PATH);
+        var context = source.context;
+        
+        var bufferLen = this.config.bufferLen || 4096;
+        var node = context.createJavaScriptNode(bufferLen, 2, 2);
 
-	worker = new Worker(config.workerPath || WORKER_PATH);
-	worker.postMessage({
-	    command: 'init',
-	    config: {
-		sampleRate: this.context.sampleRate
-	    }
-	});
-
-	worker.onmessage = function(e){
-	    var blob = e.data;
-	    currCallback(blob);
-	};
-	
-	source.connect(this.node);
-	this.node.connect(this.context.destination);    //this should not be necessary
-    };
-
-    Recorder.prototype.configure = function(cfg){
-	for (var prop in cfg){
-            if (cfg.hasOwnProperty(prop)){
-		config[prop] = cfg[prop];
+        node.onaudioprocess = (function(event){
+            if (!this.recording) return;
+            var buffer = [event.inputBuffer.getChannelData(0),
+                          event.inputBuffer.getChannelData(1)
+                         ]; 
+            worker.postMessage({
+                command: 'record',
+                buffer: buffer
+            });
+        }).bind(this);
+        worker.postMessage({
+            command: 'init',
+            config: {
+                sampleRate: context.sampleRate
             }
-	}
-    };
+        });
+        worker.onmessage = (function(event){
+            var blob = event.data;
+            this.currCallback(blob);
+        }).bind(this);;
+        source.connect(node);
+        node.connect(context.destination);    //this should not be necessary
+    }
 
     Recorder.prototype.record = function(){
-    	recording = true;
+        this.recording = true;
     };
 
     Recorder.prototype.stop = function(){
-	recording = false;
+        this.recording = false;
     };
 
+    Recorder.prototype.isRecording = function(){
+        return this.recording;
+    };
+    
     Recorder.prototype.clear = function(){
-	worker.postMessage({ command: 'clear' });
+       this.worker.postMessage({command: 'clear'});
     };
 
     Recorder.prototype.exportWAV = function(cb, type){
-	currCallback = cb || config.callback;
-	type = type || config.type || 'audio/wav';
-	if (!currCallback) throw new Error('Callback not set');
-	worker.postMessage({
+        this.currCallback = cb || this.config.callback;
+        type = type || this.config.type || 'audio/wav';
+        if (!this.currCallback) throw new Error('Callback not set');
+        this.worker.postMessage({
             command: 'exportWAV',
             type: type
-	});
+        });
     };
-
-    Recorder.forceDownload = function(blob, filename){
-	var url = (window.URL || window.webkitURL).createObjectURL(blob);
-	var link = window.document.createElement('a');
-	link.href = url;
-	link.download = filename || 'output.wav';
-	var click = document.createEvent("Event");
-	click.initEvent("click", true, true);
-	link.dispatchEvent(click);
-    }
 
     window.Recorder = Recorder;
 
