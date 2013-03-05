@@ -2,6 +2,7 @@
 
     var rec;
     var blob;
+    var getUserMedia =  (navigator.getUserMedia || navigator.mozGetUserMedia || navigator.webkitGetUserMedia).bind(navigator);
 
     var forceDownload = function(blob, filename){
         var url = (window.URL || window.webkitURL).createObjectURL(blob);
@@ -23,9 +24,8 @@
     };
 
     var doGetUserMedia = function() {
-        var constraints = {"mandatory": {}, "optional": []}; 
-        try {
-            navigator.getUserMedia({audio: true}, 
+        try{
+           getUserMedia({audio: true}, 
                                    onUserMediaSuccess,
                                    onUserMediaError);
         } catch (e) {
